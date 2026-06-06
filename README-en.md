@@ -5,17 +5,17 @@
 
 ## <span style="color:orange"> Table of Contents </span>
 
-1. [Overview](#overview)
-2. [Theoretical Foundations](#theoretical-foundations)
-3. [Bench Architecture](#bench-architecture)
-4. [Hardware Components](#hardware-components)
-5. [Mechanical Geometry](#mechanical-geometry)
-6. [System Latency Calibration](#system-latency-calibration)
-7. [Quick Start](#quick-start)
-8. [Control System](#control-system)
-9. [Data Acquisition](#data-acquisition)
-10. [Experimental Protocols](#experimental-protocols)
-11. [Results and Validation](#results-and-validation)
+1. [Overview](#-overview-)
+2. [Theoretical Foundations](#-theoretical-foundations-)
+3. [Bench Architecture](#-bench-architecture-)
+4. [Hardware Components](#-hardware-components-)
+5. [Mechanical Geometry](#-mechanical-geometry-)
+6. [System Latency Calibration](#-system-latency-calibration-)
+7. [Quick Start](#-quick-start-)
+8. [Control System](#-control-system-)
+9. [Data Acquisition](#-data-acquisition-)
+10. [Experimental Protocols](#-experimental-protocols-)
+11. [Results and Validation](#-results-and-validation-)
 
 ---
 
