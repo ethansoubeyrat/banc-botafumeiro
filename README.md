@@ -5,17 +5,17 @@
 
 ## <span style="color:orange"> Table des matières </span>
 
-1. [Vue d'ensemble](#vue-densemble)
-2. [Fondements théoriques](#fondements-théoriques)
-3. [Architecture du banc](#architecture-du-banc)
-4. [Composants matériels](#composants-matériels)
-5. [Géométrie mécanique](#géométrie-mécanique)
-6. [Calibration de la latence du système](#calibration-de-la-latence-du-système)
-7. [Démarrage rapide](#démarrage-rapide)
-8. [Système de commande](#système-de-commande)
-9. [Acquisition de données](#acquisition-de-données)
-10. [Protocoles expérimentaux](#protocoles-expérimentaux)
-11. [Résultats et validation](#résultats-et-validation)
+1. [Vue d'ensemble](#-vue-densemble-)
+2. [Fondements théoriques](#-fondements-théoriques-)
+3. [Architecture du banc](#-architecture-du-banc-)
+4. [Composants matériels](#-composants-matériels-)
+5. [Géométrie mécanique](#-géométrie-mécanique-)
+6. [Calibration de la latence du système](#-calibration-de-la-latence-du-système-)
+7. [Démarrage rapide](#-démarrage-rapide-)
+8. [Système de commande](#-système-de-commande-)
+9. [Acquisition de données](#-acquisition-de-données-)
+10. [Protocoles expérimentaux](#-protocoles-expérimentaux-)
+11. [Résultats et validation](#-résultats-et-validation-)
 
 ---
 
