@@ -59,13 +59,52 @@ $$\omega_f = \frac{2\omega_0}{n} \quad (n = 1, 2, 3, \ldots)$$
 
 **The primary band (n=1)** at **ωf = 2ω₀** is the most efficient for energy transfer to the pendulum.
 
-### <span style="color:#229DD4"> Numerical Analysis </span>
+### <span style="color:#229DD4"> Mathieu equation solution search </span>
 
-Stability diagrams (Ince-Strutt diagrams) were calculated by:
+#### <span style="color:#A02B93"> Simplification of Mathieu equation </span>
 
-1. **Numerical integration** (RK45/DOP853) of the Floquet transition matrix
-2. **Computation of Floquet exponents** μ determining growth/decay
-3. **Strict temporal synchronization** to avoid numerical drift
+A being very small (A ≈ 0,1 &rarr; A<sup>2</sup> ≈ 0,01), neglecting the $\dot{\theta}$ term, the equation reduces to :
+
+$$\ddot{\theta} + \omega_0^2[1 - A \sin(\omega_f t)]\theta = 0$$
+
+According to Floquet's theorem, we look for solutions of the form e<sup>(μt)</sup>.p(t) where p(t) is a periodic function of the same period T as the coefficients.
+
+#### <span style="color:#A02B93"> Digital analysis </span>
+
+The digital resolution of the simplified equation yields the instability diagram (Ince-Strutt diagram) :
+
+1. **Digital integration** (scipy.integrate.odeint / LSODA) of the Floquet transition matrix
+2. **Construction of the transition matrix** over a complete period T
+3. **Computation of eigenvalues** (Floquet multipliers)
+4. **Extraction of the characteristic exponent μ** determining growth/decay
+
+The numerical resolution is carried out using the script [digital_ince_strutt.py](doc/theory/scripts/digital_ince_strutt.py) and yields the following instability diagram (Ince-Strutt):
+
+![Stability diagram (Ince-Strutt - Numerical method)](doc/theory/digital_ince_strutt_stability_diagram.png)
+
+#### <span style="color:#A02B93"> Analytical analysis </span>
+
+Alternatively, one can use an analytical approximation that allows a rapid 
+**qualitative** verification, at the cost of precision and actual quantification of µ. 
+The analytical approximation of the instability bands is obtained by locating the 
+parametric resonances predicted by Floquet theory:
+
+1. **Location of resonance bands** at frequencies ωf/ω₀ = 2/n (n = 1, 2, 3...)
+2. **Approximation of each band's width** ∆(ωf) ∝ a/n (proportional to amplitude, 
+   decreasing with order n)
+3. **Construction of the instability domain** for each band n:
+
+$$\left|\frac{\omega_f}{\omega_0} - \frac{2}{n}\right| < \frac{a}{2n}$$
+
+4. **Plotting of boundaries** separating stable (µ < 0) and unstable (µ > 0) regions
+
+The analytical resolution is carried out using the script 
+[analytical_ince_strutt.py](doc/theory/scripts/analytical_ince_strutt.py) 
+and yields the following instability diagram (Ince-Strutt):
+
+![Stability diagram (Ince-Strutt - Analytical method)](doc/theory/analytical_ince_strutt_stability_diagram.png)
+
+![Stability diagram (Ince-Strutt - Analytical method - Detail)](doc/theory/analytical_ince_strutt_stability_diagram_detail.png)
 
 ---
 
