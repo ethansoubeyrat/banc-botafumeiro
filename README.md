@@ -59,13 +59,47 @@ $$\omega_f = \frac{2\omega_0}{n} \quad (n = 1, 2, 3, \ldots)$$
 
 **La bande primaire (n=1)** à **ωf = 2ω₀** est la plus efficace pour le transfert d'énergie au pendule.
 
-### <span style="color:#229DD4"> <span style="color:#229DD4"> Analyse numérique </span> </span>
+### <span style="color:#229DD4"> Recherche des solutions de l'équation de Mathieu </span>
 
-Les diagrammes de stabilité (diagrammes de Ince-Strutt) ont été calculés par :
+#### <span style="color:#A02B93"> Simplification de l'équation de Mathieu </span>
 
-1. **Intégration numérique** (RK45/DOP853) de la matrice de transition de Floquet
-2. **Calcul des exposants de Floquet** μ déterminant la croissance/décroissance
-3. **Synchronisation temporelle stricte** pour éviter les dérives numériques
+A étant très petit (A ≈ 0,1 &rarr; A<sup>2</sup> ≈ 0,01), on néglige le terme en $\dot{\theta}$.
+L'équation devient :
+
+$$\ddot{\theta} + \omega_0^2[1 - A \sin(\omega_f t)]\theta = 0$$
+
+Selon le **théorème de Floquet**, on cherchera des solutions de la forme e<sup>(μt)</sup>.p(t) où p(t) est une fonction périodique de même période que les coefficients.
+
+#### <span style="color:#A02B93"> Analyse numérique </span>
+
+La résoluton numérique de l'équation simplifiée fournit les diagrammes de stabilité (diagrammes de Ince-Strutt) :
+
+1. **Intégration numérique** (scipy.integrate.odeint / LSODA) de la matrice de transition de Floquet
+2. **Construction de la matrice de transition** sur une période complète T
+3. **Calcul des valeurs propres** (multiplicateurs de Floquet)
+4. **Extraction de l'exposant caractéristique μ** déterminant la croissance/décroissance
+
+La résolution numérique est effectuée à l'aide du script [digital_ince_strutt.py](doc/theory/scripts/digital_ince_strutt.py) et fournit le diagramme d'instabilité (Ince-Strutt) suivant :
+
+![Diagramme de stabilité (Ince Strutt - Méthode numérique)](doc/theory/digital_ince_strutt_stability_diagram.png)
+
+#### <span style="color:#A02B93"> Analyse analytique </span>
+
+Alternativement, on peut utiliser une approximation analytique qui permet une vérification **qualitative** rapide en sacrifiant la précision et la quantification réelle de µ. L'approximation analytique des bandes d'instabilité est obtenue en localisant les résonances paramétriques prédites par la théorie de Floquet :
+
+1. **Localisation des bandes de résonance** aux fréquences ωf/ω₀ = 2/n (n = 1, 2, 3...)
+2. **Approximation de la largeur de chaque bande** ∆(ωf) ∝ a/n (proportionnelle à l'amplitude, décroissante avec l'ordre n)
+3. **Construction du domaine d'instabilité** pour chaque bande n :
+
+$$\left|\frac{\omega_f}{\omega_0} - \frac{2}{n}\right| < \frac{a}{2n}$$
+
+4. **Tracé des frontières** séparant zones stables (µ < 0) et instables (µ > 0)
+
+La résolution analytique est effectuée à l'aide du script [analytical_ince_strutt.py](doc/theory/scripts/analytical_ince_strutt.py) et fournit le diagramme d'instabilité (Ince-Strutt) suivant :
+
+![Diagramme de stabilité (Ince-Strutt - Méthode analytique)](doc/theory/analytical_ince_strutt_stability_diagram.png)
+
+![Diagramme de stabilité (Ince-Strutt - Méthode analytique - Détail)](doc/theory/analytical_ince_strutt_stability_diagram_detail.png)
 
 ---
 
