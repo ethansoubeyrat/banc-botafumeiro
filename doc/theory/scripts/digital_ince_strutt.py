@@ -1,7 +1,7 @@
 ﻿"""
 Diagramme de Stabilité de Mathieu (Ince-Strutt)
 ================================================
-Équation : θ̈ + ω₀²[1 + a·cos(2ωf·t)]·θ = 0
+Équation : θ̈ + ω₀²[1 - a·sin(ωf·t)]·θ = 0
 
 Méthode : Matrice de transition de Floquet (monodromy matrix)
 Intégration : scipy.integrate.odeint (LSODA)
@@ -18,7 +18,7 @@ from matplotlib.colors import TwoSlopeNorm
 from scipy.integrate import odeint
 
 print("Calcul du diagramme de stabilité de Mathieu (Ince-Strutt)...")
-print("Équation : θ̈ + ω₀²[1 + a·cos(2ωf·t)]·θ = 0")
+print("Équation : θ̈ + ω₀²[1 - a·sin(ωf·t)]·θ = 0")
 
 # ──────────────────────────────────────────────
 # PARAMÈTRES DE LA GRILLE
@@ -57,7 +57,7 @@ def compute_floquet_exponent(a, omega_ratio_val, num_periods=1):
     # Système du 1er ordre : [θ, θ̇]
     def system(y, t):
         theta, theta_dot = y
-        coeff      = omega_0**2 * (1 + a * np.cos(2 * omega_f * t))
+        coeff      = omega_0**2 * (1 - a * np.sin(omega_f * t))
         theta_ddot = -coeff * theta
         return [theta_dot, theta_ddot]
 
@@ -128,7 +128,7 @@ ax.set_xlabel('Ratio de fréquences : ωf/ω₀', fontsize=13, fontweight='bold'
 ax.set_ylabel('Amplitude de modulation : a', fontsize=13, fontweight='bold')
 ax.set_title(
     'DIAGRAMME DE STABILITÉ DE MATHIEU (INCE-STRUTT)\n'
-    'θ̈ + ω₀²[1 + a·cos(2ωf·t)]·θ = 0',
+    'θ̈ + ω₀²[1 - a·sin(ωf·t)]·θ = 0',
     fontsize=14, fontweight='bold'
 )
 

@@ -110,7 +110,7 @@ Le banc a l'architecture suivante (voir la liste des matériaux pour les détail
 ![Vue d'ensemble du système Botafumeiro](doc/system/system_overview.png)
 
 1. Masse (0,290 kg)
-2. Fil inélastique sans masse
+2. Fil inélastique (kevlar) sans masse (1.175m < l($\beta$) < 1.265m)
 3. Poulie double
 4. Servomoteur (0° → 180°)
 5. Levier (4,5 cm)
@@ -501,77 +501,155 @@ time,AccX,AccY,AccZ,AsX,AsY,AsZ,AngleX,AngleY,AngleZ,vMotor,iMotor,pMotor
 - Immobiliser le pendule en position verticale
 - Presser **Reset Angles** de manière à réinitialiser l'IMU (risque de dérive)
 
+### <span style="color:#229DD4"> Analyse des signaux </span>
+
+Les signaux peuvent être analysés et visualisés à l'aide du script [visualize_csv_signals.py](doc/experiments/scripts/visualize_csv_signals.py)
+
+Dépendances :
+
+```bash
+pip install pandas numpy matplotlib
+```
+
+Exécution :
+
+```bash
+# Lancer le script sur le fichier à analyser
+python3 visualize_csv_signals.py log_20260604_154424.csv
+```
+
+Fournit l'analyse :
+
+```bash
+Loaded: log_20260604_154424.csv
+  Samples   : 4366 (after skipping 300)
+  Duration  : 87.30 s
+  Sample rate: 50.0 Hz  (dt = 20.0 ms)
+✓ signals_full.png
+✓ signals_zoom.png
+✓ signals_combined.png
+
+==================================================
+STATISTICS
+==================================================
+
+Angle (AngleY):
+  Min   : -27.19°
+  Max   : 24.53°
+  Amplitude: 25.86°
+
+Angular velocity (AsY):
+  Min   : -85.51 °/s
+  Max   : 81.06 °/s
+  Std   : 39.21 °/s
+
+Motor power:
+  Mean  : 3.068 W
+  Max   : 18.246 W
+  Envelope max: 18.246 W
+==================================================
+```
+
+et les graphes :
+
+![Tous les signaux](doc/experiments/signals_full.png)
+![Signaux zoomés](doc/experiments/signals_zoom.png)
+![Signaux combinés](doc/experiments/signals_combined.png)
+
+### <span style="color:#229DD4"> Nettoyage des signaux </span>
+
+Du fait de défauts du logiciel ou de défaillances du moteur, il se peut que l'excitation soit interrompue pendant un ou plusieurs cycles. Pour une analyse correcte, les périodes correspondantes doivent être supprimées dans le fichier csv selon le processus suivant :
+
+![Nettoyage des signaux](doc/experiments/data_cleanup_process.png)
+
+Le script python [clean_csv.py](doc/experiments/scripts/clean_csv.py) est un exemple d'implémentation d'un processus de nettoyage en trois étapes :
+
+```
+1. AUTO-DÉTECTION  →  détecte les zones candidates automatiquement
+2. AJUSTEMENT      →  permet d'affiner les zones dans ZONES_TO_REMOVE
+3. NETTOYAGE       →  applique le masque, sauvegarde *_clean.csv
+```
+
+A adapter suivant :
+
+```
+FILE_MAPPING = {
+    'mon_fichier': 'data_20260601.csv',
+}
+ZONES_TO_REMOVE = {
+    'mon_fichier': [],   # laisser vide pour l'auto-détection d'abord
+}
+```
+
 ### <span style="color:#229DD4"> Protocole 1 : Validation de la résonance primaire </span>
 
 **Objectif :** Confirmer que ωf = 2ω₀ est la fréquence optimale
 
+**Données :** l₀ = 1.175m &rarr; T₀ = $2\pi.\sqrt{\frac{l₀}{g}}$ ≈ 2.2 s &rarr; ω₀ ≈ 2.87 rad/s
+
 **Procédure :**
 
-1. Fixer l'amplitude du bras : β_max = 45°
-2. Fixer la phase : φ = 0° (synchrone)
-3. Varier la fréquence : ωf/ω₀ ∈ [1, 3] par pas de 0,1
-4. Pour chaque fréquence, mesurer la croissance d'amplitude après N cycles
-5. Construire une courbe de taux d'amplification en fonction de ωf/ω₀
+1. Mode asynchrone
+2. Fixer l'amplitude du bras : β_max = 45°
+3. Fixer la phase : φ = 0°
+4. Varier la période de forçage : Tf ∈ [1.0s, 3.0s] par pas de 0,1s
+5. Pour chaque valeur de période, mesurer la croissance d'amplitude après N cycles
+6. Construire une courbe de taux d'amplification en fonction de T
 
 **Résultat attendu :** Pic d'amplification à ωf/ω₀ = 2
 
+**Résultats expérimentaux :**
+
+[Données expérimentales](doc/experiments/data/forced_frequency_scanning/)
+
+L'exposant de Floquet µ est estimé par ajustement exponentiel sur l'enveloppe d'amplitude pour chacune des 21 valeurs de Tf testées (1.0 s à 3.0 s, pas 0.1 s). Tous les µ mesurés sont négatifs, ce qui s'explique par l'amortissement naturel du pendule.
+Néanmoins, le minimum d'amortissement est localisé à Tf = 1.1 s (Tf/T₀ = 0.491), à moins de 20 ms de la valeur théorique T₀/2 = 1.12 s.
+L'analyse détaillée du signal à Tf = 1.1 s révèle un comportement non-linéaire caractéristique en quatre phases :
+
+- Battements (0-50 s) : l'enveloppe oscille entre 18° et 24° avec une période d'environ 20 s. Ce phénomène résulte du désaccord non-linéaire : l'augmentation d'amplitude allonge la période propre du pendule, éloignant progressivement le système de la résonance jusqu'à provoquer un amortissement, puis un retour à la résonance.
+- Amortissement progressif (50-145 s) : la dérive de phase moteur/pendule finit par rendre le pompage défavorable sur la majeure partie du cycle.
+- Quasi-arrêt (145-195 s) : l'amortissement naturel domine à faible amplitude.
+- Résonance soudaine (t ≈ 214 s, 32.5°) : depuis une petite amplitude où T_propre ≈ T₀, le système retrouve ponctuellement une phase favorable et entre brièvement en résonance paramétrique franche, illustrant la sensibilité aux conditions initiales de ce régime.
+
+La figure suivante illustre ces quatre phases :
+
+![Résonance paramétrique - Balayage en fréquence de forçage](doc/experiments/period_scanning_complete_report.png)
+
+**Conclusion :** la résonnance est bien localisée à Tf/T₀ ≈ 0.5.
+
 ### <span style="color:#229DD4"> Protocole 2 : Optimisation de la phase </span>
 
-**Objectif :** Trouver la phase optimale φ pour maximiser la croissance
+**Objectif :** Trouver la phase optimale φ pour maximiser la résonance
 
 **Procédure :**
 
-1. Fixer ωf = 2ω₀ (fréquence primaire)
+1. Mode synchrone
 2. Fixer l'amplitude : β_max = 45°
-3. Varier la phase : φ ∈ [0°, 360°] par pas de 15°
+3. Varier la phase : φ ∈ [0°, 360°] par pas de 10% de la période (36°)
 4. Mesurer la croissance d'amplitude pour chaque phase après N cycles
 
-**Résultat attendu :** Pic d'amplification autour de φ ≈ 90-95°
+**Résultat attendu :** Pic d'amplification autour de :
 
-### <span style="color:#229DD4"> Protocole 3 : Comparaison théorie/expérience </span>
+- φ ≈ 0° (0% Tf)
+- φ ≈ 180° (50% Tf)
+- φ ≈ 360°... (100% Tf)
 
-**Objectif :** Valider les prédictions des diagrammes de Floquet numériques
+**Résultats expérimentaux :**
 
-**Procédure :**
+[Données expérimentales](doc/experiments/data/forced_phase_scanning/)
 
-1. Pour différentes combinaisons (ωf, β_max), mesurer le taux d'amplification expérimental μ_exp
-2. Comparer au taux théorique μ_theo du diagramme de Floquet calculé
-3. Analyser les écarts (erreurs de mesure, modèle imparfait, etc.)
+L'exposant de Floquet μ est déterminé par regression exponentielle sur les données expérimentales. Ses valeurs extrêmes sont :
 
----
+![Valeurs extrêmes de μ](doc/experiments/mu_extrema.png)
 
-## <span style="color:orange"> Résultats et validation </span>
-
-### <span style="color:#229DD4"> Résultats expérimentaux typiques </span>
-
-#### <span style="color:#A02B93"> Taux d'amplification en fonction de la fréquence </span>
-
-**Observation :** Bande primaire claire à ωf/ω₀ = 2
-
-```
-Amplification (dB/cycle)
-        ▲
-      5 │        ╱╲
-        │      ╱    ╲
-      0 │────╱────────╲──────
-        │   ╱ ωf/ω₀=2  ╲
-     -5 │                
-        └─────────────────► ωf/ω₀
-         0    1    2    3
-```
-
-#### <span style="color:#A02B93"> Optimisation de la phase </span>
-
-**Observation :** Phase optimale φ_opt ≈ 95°
-
-- Croissance maximale : +2,12% par cycle
-- Plage de phase efficace : ±30° autour de l'optimum
-
-**Taux d'amplification des oscillations du pendule en fonction de la phase d'excitation du moteur**
+1. Amplification — À la phase optimale (95%, 342°), le pendule gagne +2.12% d'amplitude par cycle et de façon semblable +1.78% pour φ à (45%, 162°). Ces deux pics de μ correspondent à la résonance paramétrique en mode synchrone.
+2. Symétrie à 180° — Deux zones d'amplification (≈ 45% et ≈ 95%) séparées de 180°. Un demi-cycle de décalage produit un effet miroir : ce qui amplifie à φ amplifie également à φ+180°, et ce qui amortit à φ amortit également à φ+180°.
+3. Forte sensibilité à la phase — Le rapport entre le taux maximal (+2.12%/cycle à 95%) et minimal (-4.47%/cycle à 15-20%) représente un facteur ~6. Une mauvaise phase est fortement défavorable : le moteur extrait alors de l'énergie du pendule.
+4. Cohérence avec la latence système — La phase optimale mesurée (95%, 342°) est décalée de 18° par rapport à 360° (soit 5% d'une période). Avec T₀ = 2.22 s, cela correspond à un délai de ~111 ms, en excellent accord avec la latence hardware mesurée par analyse vidéo (~100 ms ± 33 ms). La phase optimale théorique étant φ = 0° (360°), le système se comporte exactement comme prédit une fois la latence prise en compte.
 
 ![Influence de la phase sur la résonance](doc/experiments/pumping_phase_analysis.png)
 
-### <span style="color:#229DD4"> Comparaison numérique et expérience </span>
+**Comparaison numérique et expérience :**
 
 | Paramètre | Théorique | Expérimental | Écart |
 |-----------|-----------|--------------|-------|
@@ -581,4 +659,3 @@ Amplification (dB/cycle)
 
 **Le décalage de 5% entre la phase théorique et expérimentale correspond à ~110 ms**
 **Cela correspond à la latence mesurée entre la position réelle du pendule et le début de l'actuation du moteur.**
-
