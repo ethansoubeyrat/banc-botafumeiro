@@ -519,5 +519,6 @@ class ProfiledLock(asyncio.Lock):
 
 - Python asyncio documentation: https://docs.python.org/3/library/asyncio.html
 - GIL (Global Interpreter Lock): https://realpython.com/python-gil/
-- Real-time constraints in Python: https://www.embeddedrelated.com/showarticle/1471.php
+- Feasibility Study for a Python-Based Embedded Real-Time Control System: https://www.mdpi.com/2079-9292/12/6/1426
+- Python's asyncio: A Hands-On Walkthrough: https://realpython.com/async-io-python/
 
